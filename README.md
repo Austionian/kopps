@@ -1,9 +1,10 @@
 # Kopps
 
-A simple web scraper written in Rust to get the flavors of the day.
+For Wisconsin custurd lovers, a simple web scraper written in Rust to get the flavors of the day.
 
 ## How to use
 
+Run:
 ``` shell
 $ kopps
 
@@ -17,4 +18,12 @@ __TOMORROW__
  Caramel Cashew
 ```
 
-## Add to your
+## Installation (on Mac)
+
+Build the release binary:
+`cargo build --release`
+
+Symlink the binary to your PATH:
+`sudo ln -s /User/<..>/kopps/target/release/kopps`
+
+
