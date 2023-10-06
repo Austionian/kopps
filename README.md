@@ -10,12 +10,12 @@ $ kopps
 
 // Output:
 __TODAY__
- Mint Chip
- Hog Heaven
+🍦  Chocolate Peanut Butter Chocolate
+🍦  Strawberry Rhubarb Pie
 
 __TOMORROW__
- Chocolate Chip Cookie Dough
- Caramel Cashew
+🍦  Mint Chip
+🍦  Twisted Turtle
 ```
 
 ## Installation (on Mac)
