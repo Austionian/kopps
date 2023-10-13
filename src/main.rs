@@ -1,15 +1,19 @@
 use anyhow::Result;
 use scraper::{Html, Selector};
+use spinners::{Spinner, Spinners};
 use std::io::Write;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let mut spinner = Spinner::new(Spinners::Dots, "Loading the flavor forecast...".into());
     let response = reqwest::get("https://kopps.com").await.unwrap();
 
     let html = Html::parse_document(&response.text().await.unwrap());
     let selector = Selector::parse(r#".display-1"#).unwrap();
 
+    spinner.stop_with_newline();
+    std::process::Command::new("clear").status().unwrap();
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
     stdout
         .set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Magenta)))
