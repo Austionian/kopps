@@ -2,11 +2,20 @@ use anyhow::Result;
 use scraper::{Html, Selector};
 use spinners::{Spinner, Spinners};
 use std::io::Write;
+use std::time::Instant;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let now = Instant::now();
     let mut spinner = Spinner::new(Spinners::Dots, "Loading the flavor forecast...".into());
+
+    let tomorrow = std::thread::spawn(|| async {
+        reqwest::get("https://kopps.com/flavor-preview")
+            .await
+            .unwrap()
+    });
+
     let response = reqwest::get("https://kopps.com").await.unwrap();
 
     let html = Html::parse_document(&response.text().await.unwrap());
@@ -36,16 +45,14 @@ async fn main() -> Result<()> {
         .unwrap();
     println!("\n__TOMORROW__");
 
-    let response = reqwest::get("https://kopps.com/flavor-preview")
-        .await
-        .unwrap();
-
-    let html = Html::parse_document(&response.text().await.unwrap());
-    let selector = Selector::parse(r#".h5"#).unwrap();
-
     stdout
         .set_color(ColorSpec::new().set_bold(false).set_fg(None))
         .unwrap();
+
+    let response = tomorrow.join().unwrap().await;
+
+    let html = Html::parse_document(&response.text().await.unwrap());
+    let selector = Selector::parse(r#".h5"#).unwrap();
 
     writeln!(
         &mut stdout,
@@ -72,6 +79,9 @@ async fn main() -> Result<()> {
             .parse::<String>()
             .unwrap()
     )?;
+
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
 
     Ok(())
 }
