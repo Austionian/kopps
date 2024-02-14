@@ -2,20 +2,17 @@ use anyhow::Result;
 use scraper::{Html, Selector};
 use spinners::{Spinner, Spinners};
 use std::io::Write;
-use std::time::Instant;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let now = Instant::now();
+    get_today().await?;
+    get_tomorrow().await?;
+    Ok(())
+}
+
+async fn get_today() -> Result<()> {
     let mut spinner = Spinner::new(Spinners::Dots, "Loading the flavor forecast...".into());
-
-    let tomorrow = std::thread::spawn(|| async {
-        reqwest::get("https://kopps.com/flavor-preview")
-            .await
-            .unwrap()
-    });
-
     let response = reqwest::get("https://kopps.com").await.unwrap();
 
     let html = Html::parse_document(&response.text().await.unwrap());
@@ -23,6 +20,7 @@ async fn main() -> Result<()> {
 
     spinner.stop_with_newline();
     std::process::Command::new("clear").status().unwrap();
+
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
     stdout
         .set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Magenta)))
@@ -43,16 +41,23 @@ async fn main() -> Result<()> {
     stdout
         .set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Cyan)))
         .unwrap();
+
+    Ok(())
+}
+
+async fn get_tomorrow() -> Result<()> {
     println!("\n__TOMORROW__");
-
-    stdout
-        .set_color(ColorSpec::new().set_bold(false).set_fg(None))
+    let response = reqwest::get("https://kopps.com/flavor-preview")
+        .await
         .unwrap();
-
-    let response = tomorrow.join().unwrap().await;
 
     let html = Html::parse_document(&response.text().await.unwrap());
     let selector = Selector::parse(r#".h5"#).unwrap();
+
+    let mut stdout = StandardStream::stdout(ColorChoice::Always);
+    stdout
+        .set_color(ColorSpec::new().set_bold(false).set_fg(None))
+        .unwrap();
 
     writeln!(
         &mut stdout,
@@ -79,9 +84,6 @@ async fn main() -> Result<()> {
             .parse::<String>()
             .unwrap()
     )?;
-
-    let elapsed = now.elapsed();
-    println!("Elapsed: {:.2?}", elapsed);
 
     Ok(())
 }
